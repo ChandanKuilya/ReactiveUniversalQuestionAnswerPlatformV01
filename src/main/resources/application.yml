@@ -1,0 +1,11 @@
+spring:
+  application:
+    name: ReactiveUniversalQuestionAnswerPlatform
+
+  data:
+    mongodb:
+      host: localhost
+      port: 27017
+      database: questionapp_db
+      auto-index-creation: true
+

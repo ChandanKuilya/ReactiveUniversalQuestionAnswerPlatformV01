@@ -5,7 +5,9 @@ import com.myproj.ruqaplatform.dto.QuestionRequestDto;
 import com.myproj.ruqaplatform.dto.QuestionResponseDto;
 import com.myproj.ruqaplatform.models.Question;
 import com.myproj.ruqaplatform.repositories.QuestionRepository;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.time.LocalDateTime;
@@ -44,6 +46,14 @@ public class QuestionService implements IQuestionService{
                 .doOnSuccess(response -> {
                     System.out.println("Question fetched successfully: " + response);
                 });
+    }
+
+    @Override
+    public Flux<QuestionResponseDto> searchQuestions(String searchTerm, int offset, int page) {
+        return questionRepository.findByTitleOrContentContainingIgnoreCase(searchTerm, PageRequest.of(offset, page))
+                .map(QuestionAdapter::toQuestionResponseDto)
+                .doOnError(error -> System.out.println("Error searching questions: " + error))
+                .doOnComplete(() -> System.out.println("Questions searched successfully"));
     }
 
 }

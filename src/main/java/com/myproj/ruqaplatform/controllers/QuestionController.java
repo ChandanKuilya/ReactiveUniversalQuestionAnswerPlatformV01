@@ -4,6 +4,7 @@ import com.myproj.ruqaplatform.dto.QuestionRequestDto;
 import com.myproj.ruqaplatform.dto.QuestionResponseDto;
 import com.myproj.ruqaplatform.services.IQuestionService;
 import org.springframework.web.bind.annotation.*;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 @RestController
@@ -29,4 +30,14 @@ public class QuestionController {
                 .doOnError(error -> System.out.println("Error fetching question: " + error))
                 .doOnSuccess(response -> System.out.println("Question fetched successfully: " + response));
     }
+
+    @GetMapping("/search")
+    public Flux<QuestionResponseDto> searchQuestions(
+            @RequestParam String query,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    ) {
+        return questionService.searchQuestions(query, page, size);
+    }
+
 }

@@ -40,4 +40,14 @@ public class QuestionController {
         return questionService.searchQuestions(query, page, size);
     }
 
+    @GetMapping()
+    public Flux<QuestionResponseDto> getAllQuestions(
+            @RequestParam(required = false) String cursor,
+            @RequestParam(defaultValue = "10") int size
+    ) {
+        return questionService.getAllQuestions(cursor, size)
+                .doOnError(error -> System.out.println("Error fetching questions: " + error))
+                .doOnComplete(() -> System.out.println("Questions fetched successfully"));
+    }
+
 }

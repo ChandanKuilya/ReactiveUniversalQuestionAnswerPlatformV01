@@ -6,6 +6,7 @@ import com.myproj.ruqaplatform.dto.QuestionResponseDto;
 import com.myproj.ruqaplatform.models.Question;
 import com.myproj.ruqaplatform.repositories.QuestionRepository;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -54,6 +55,26 @@ public class QuestionService implements IQuestionService{
                 .map(QuestionAdapter::toQuestionResponseDto)
                 .doOnError(error -> System.out.println("Error searching questions: " + error))
                 .doOnComplete(() -> System.out.println("Questions searched successfully"));
+    }
+
+    @Override
+    public Flux<QuestionResponseDto> getAllQuestions(String cursor, int size) {
+        Pageable pageable = PageRequest.of(0, size);
+
+        if(!com.myproj.ruqaplatform.utils.CursorUtils.isValidCursor(cursor)) {
+            return questionRepository.findTop10ByOrderByCreatedAtAsc()
+                    .take(size)
+                    .map(QuestionAdapter::toQuestionResponseDto)
+                    .doOnError(error -> System.out.println("Error fetching questions: " + error))
+                    .doOnComplete(() -> System.out.println("Questions fetched successfully"));
+        } else {
+            LocalDateTime cursorTimeStamp = com.myproj.ruqaplatform.utils.CursorUtils.parseCursor(cursor);
+            return questionRepository.findByCreatedAtGreaterThanOrderByCreatedAtAsc(cursorTimeStamp, pageable)
+                    .map(QuestionAdapter::toQuestionResponseDto)
+                    .doOnError(error -> System.out.println("Error fetching questions: " + error))
+                    .doOnComplete(() -> System.out.println("Questions fetched successfully"));
+        }
+
     }
 
 }

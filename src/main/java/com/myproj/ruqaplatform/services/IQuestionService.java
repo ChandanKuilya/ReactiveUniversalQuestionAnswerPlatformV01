@@ -11,5 +11,6 @@ public interface IQuestionService {
     public Mono<QuestionResponseDto> createQuestion(QuestionRequestDto questionRequestDto);
     public Mono<QuestionResponseDto> getQuestionById(String id);
     public Flux<QuestionResponseDto> searchQuestions(String searchTerm, int offset, int page);
+    public Flux<QuestionResponseDto> getAllQuestions(String cursor, int size);
 
 }

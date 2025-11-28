@@ -33,6 +33,8 @@ public class Question {
     @Size(min=10,max=1000,message="Content must be between 10 and 1000 characters")
     private String content;
 
+    private Integer views;
+
     @CreatedDate
     private LocalDateTime createdAt;
 

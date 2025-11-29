@@ -4,7 +4,7 @@ import com.myproj.ruqaplatform.adapter.QuestionAdapter;
 import com.myproj.ruqaplatform.dto.QuestionRequestDto;
 import com.myproj.ruqaplatform.dto.QuestionResponseDto;
 import com.myproj.ruqaplatform.models.Question;
-import com.myproj.ruqaplatform.repositories.QuestionRepository;
+import com.myproj.ruqaplatform.repositories.IQuestionRepository;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -16,9 +16,9 @@ import java.time.LocalDateTime;
 @Service
 public class QuestionService implements IQuestionService{
 
-    private final QuestionRepository questionRepository;     // constructor based field injection
-    public QuestionService(QuestionRepository questionRepository) {
-        this.questionRepository=questionRepository;       // you can also just annotate this QuestionService Class with
+    private final IQuestionRepository IQuestionRepository;     // constructor based field injection
+    public QuestionService(IQuestionRepository IQuestionRepository) {
+        this.IQuestionRepository = IQuestionRepository;       // you can also just annotate this QuestionService Class with
                                                        // @RequiredArgsConstructor and omit this constructor declaration
     }
     @Override
@@ -31,7 +31,7 @@ public class QuestionService implements IQuestionService{
                 .updatedAt(LocalDateTime.now())
                 .build();
 
-        return questionRepository.save(question)
+        return IQuestionRepository.save(question)
                 .map(QuestionAdapter::toQuestionResponseDto)
                 .doOnSuccess(response -> System.out.println("Question created successfully: " + response))
                 .doOnError(error-> System.out.println("Error while creating question: " + error));
@@ -41,7 +41,7 @@ public class QuestionService implements IQuestionService{
 
     @Override
     public Mono<QuestionResponseDto> getQuestionById(String id) {
-        return questionRepository.findById(id)
+        return IQuestionRepository.findById(id)
                 .map(QuestionAdapter::toQuestionResponseDto)
                 .doOnError(error -> System.out.println("Error fetching question: " + error))
                 .doOnSuccess(response -> {
@@ -51,7 +51,7 @@ public class QuestionService implements IQuestionService{
 
     @Override
     public Flux<QuestionResponseDto> searchQuestions(String searchTerm, int offset, int page) {
-        return questionRepository.findByTitleOrContentContainingIgnoreCase(searchTerm, PageRequest.of(offset, page))
+        return IQuestionRepository.findByTitleOrContentContainingIgnoreCase(searchTerm, PageRequest.of(offset, page))
                 .map(QuestionAdapter::toQuestionResponseDto)
                 .doOnError(error -> System.out.println("Error searching questions: " + error))
                 .doOnComplete(() -> System.out.println("Questions searched successfully"));
@@ -62,14 +62,14 @@ public class QuestionService implements IQuestionService{
         Pageable pageable = PageRequest.of(0, size);
 
         if(!com.myproj.ruqaplatform.utils.CursorUtils.isValidCursor(cursor)) {
-            return questionRepository.findTop10ByOrderByCreatedAtAsc()
+            return IQuestionRepository.findTop10ByOrderByCreatedAtAsc()
                     .take(size)
                     .map(QuestionAdapter::toQuestionResponseDto)
                     .doOnError(error -> System.out.println("Error fetching questions: " + error))
                     .doOnComplete(() -> System.out.println("Questions fetched successfully"));
         } else {
             LocalDateTime cursorTimeStamp = com.myproj.ruqaplatform.utils.CursorUtils.parseCursor(cursor);
-            return questionRepository.findByCreatedAtGreaterThanOrderByCreatedAtAsc(cursorTimeStamp, pageable)
+            return IQuestionRepository.findByCreatedAtGreaterThanOrderByCreatedAtAsc(cursorTimeStamp, pageable)
                     .map(QuestionAdapter::toQuestionResponseDto)
                     .doOnError(error -> System.out.println("Error fetching questions: " + error))
                     .doOnComplete(() -> System.out.println("Questions fetched successfully"));

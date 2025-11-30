@@ -3,8 +3,11 @@ package com.myproj.ruqaplatform.services;
 import com.myproj.ruqaplatform.adapter.QuestionAdapter;
 import com.myproj.ruqaplatform.dto.QuestionRequestDto;
 import com.myproj.ruqaplatform.dto.QuestionResponseDto;
+import com.myproj.ruqaplatform.events.ViewCountEvent;
 import com.myproj.ruqaplatform.models.Question;
+import com.myproj.ruqaplatform.producers.KafkaEventProducer;
 import com.myproj.ruqaplatform.repositories.IQuestionRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -14,13 +17,19 @@ import reactor.core.publisher.Mono;
 import java.time.LocalDateTime;
 
 @Service
+@RequiredArgsConstructor
 public class QuestionService implements IQuestionService{
 
     private final IQuestionRepository IQuestionRepository;     // constructor based field injection
-    public QuestionService(IQuestionRepository IQuestionRepository) {
-        this.IQuestionRepository = IQuestionRepository;       // you can also just annotate this QuestionService Class with
-                                                       // @RequiredArgsConstructor and omit this constructor declaration
-    }
+//    public QuestionService(IQuestionRepository IQuestionRepository) {
+//        this.IQuestionRepository = IQuestionRepository;       // you can also just annotate this QuestionService Class with
+//                                                       // @RequiredArgsConstructor and omit this constructor declaration
+//    }
+
+    private final KafkaEventProducer kafkaEventProducer;
+
+
+
     @Override
     public Mono<QuestionResponseDto> createQuestion(QuestionRequestDto questionRequestDto){
 
@@ -46,6 +55,8 @@ public class QuestionService implements IQuestionService{
                 .doOnError(error -> System.out.println("Error fetching question: " + error))
                 .doOnSuccess(response -> {
                     System.out.println("Question fetched successfully: " + response);
+                    ViewCountEvent viewCountEvent = new ViewCountEvent(id, "question", LocalDateTime.now());
+                    kafkaEventProducer.publishViewCountEvent(viewCountEvent);
                 });
     }
 

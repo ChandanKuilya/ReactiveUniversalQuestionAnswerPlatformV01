@@ -53,6 +53,7 @@ public class KafkaConfig {
         configProps.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
         configProps.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, JsonDeserializer.class);
 
+        configProps.put(JsonDeserializer.TRUSTED_PACKAGES, "com.myproj.ruqaplatform.events");
 
         return new DefaultKafkaConsumerFactory<>(configProps);
     }
